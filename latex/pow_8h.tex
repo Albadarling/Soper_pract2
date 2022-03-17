@@ -1,0 +1,155 @@
+\hypertarget{pow_8h}{}\doxysection{pow.\+h File Reference}
+\label{pow_8h}\index{pow.h@{pow.h}}
+
+
+Computation of the P\+O\+W.\+💩  
+
+
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structthread__data}{thread\+\_\+data}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{pow_8h_a67668dcd9741850b3ca54c77e7c4d813}{P\+O\+W\+\_\+\+L\+I\+M\+IT}}~99997669
+\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{pow_8h_a7f18f261743cf8120ff727e52eda988c}\label{pow_8h_a7f18f261743cf8120ff727e52eda988c}} 
+typedef struct \mbox{\hyperlink{structthread__data}{thread\+\_\+data}} {\bfseries T\+Data}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+long int \mbox{\hyperlink{pow_8h_a55a671a56836a3e49010852dce91c511}{pow\+\_\+hash}} (long int x)
+\begin{DoxyCompactList}\small\item\em Computes the following hash function\+: f(x) = (X x + Y) \% P. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{pow_8h_af8b97f752f3c17e5e5b8eb4d036b0089}{minar}} (void $\ast$d2)
+\begin{DoxyCompactList}\small\item\em Makes the thread call the \mbox{\hyperlink{pow_8h_a55a671a56836a3e49010852dce91c511}{pow\+\_\+hash(long int x)}} function and updates the global variable\+: solution\+\_\+flag if they find the result. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{pow_8h_ae2f8af7e78c8e3a0fe65e7468df8beb5}{minero}} (int target, int nhilos, int rondas, int tube\+\_\+miner\mbox{[}2\mbox{]}, int tube\+\_\+monitor\mbox{[}2\mbox{]})
+\begin{DoxyCompactList}\small\item\em Creates the threads and calls the function \mbox{\hyperlink{pow_8h_af8b97f752f3c17e5e5b8eb4d036b0089}{minar(void $\ast$d2)}} \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{pow_8h_a762ac5edc02ddfd8bbe6b2fa2de761a4}{monitor}} (int target, int rondas, int tube\+\_\+miner\mbox{[}2\mbox{]}, int tube\+\_\+monitor\mbox{[}2\mbox{]})
+\begin{DoxyCompactList}\small\item\em Checks the results of each round sent through the pipe by the function minero(..) and sends back to minero(..) if they are correct. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{pow_8h_a7c6bbf609eb546c4c253b7e984049923}{print\+Wait\+Status}} (int status, char $\ast$type)
+\begin{DoxyCompactList}\small\item\em Prints the status of the function in the terminal and checks if the status was correct, if not looks for the signal that killed the process and it prints it in the terminal. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Computation of the P\+O\+W.\+💩 
+
+\begin{DoxyAuthor}{Author}
+Fernando Ónega and Alba Delgado 
+\end{DoxyAuthor}
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+2022-\/02-\/28
+\end{DoxyDate}
+\begin{DoxyCopyright}{Copyright}
+Copyright (c) 2022 
+\end{DoxyCopyright}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{pow_8h_a67668dcd9741850b3ca54c77e7c4d813}\label{pow_8h_a67668dcd9741850b3ca54c77e7c4d813}} 
+\index{pow.h@{pow.h}!POW\_LIMIT@{POW\_LIMIT}}
+\index{POW\_LIMIT@{POW\_LIMIT}!pow.h@{pow.h}}
+\doxysubsubsection{\texorpdfstring{POW\_LIMIT}{POW\_LIMIT}}
+{\footnotesize\ttfamily \#define P\+O\+W\+\_\+\+L\+I\+M\+IT~99997669}
+
+Maximum number for the hash result. 
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{pow_8h_af8b97f752f3c17e5e5b8eb4d036b0089}\label{pow_8h_af8b97f752f3c17e5e5b8eb4d036b0089}} 
+\index{pow.h@{pow.h}!minar@{minar}}
+\index{minar@{minar}!pow.h@{pow.h}}
+\doxysubsubsection{\texorpdfstring{minar()}{minar()}}
+{\footnotesize\ttfamily void minar (\begin{DoxyParamCaption}\item[{void $\ast$}]{d2 }\end{DoxyParamCaption})}
+
+
+
+Makes the thread call the \mbox{\hyperlink{pow_8h_a55a671a56836a3e49010852dce91c511}{pow\+\_\+hash(long int x)}} function and updates the global variable\+: solution\+\_\+flag if they find the result. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d2} & a pointer to the struct Tdata (defined above with target,start and $\ast$k). \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Doesn\textquotesingle{}t return anything since it\textquotesingle{}s a void function. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{pow_8h_ae2f8af7e78c8e3a0fe65e7468df8beb5}\label{pow_8h_ae2f8af7e78c8e3a0fe65e7468df8beb5}} 
+\index{pow.h@{pow.h}!minero@{minero}}
+\index{minero@{minero}!pow.h@{pow.h}}
+\doxysubsubsection{\texorpdfstring{minero()}{minero()}}
+{\footnotesize\ttfamily int minero (\begin{DoxyParamCaption}\item[{int}]{target,  }\item[{int}]{nhilos,  }\item[{int}]{rondas,  }\item[{int}]{tube\+\_\+miner\mbox{[}2\mbox{]},  }\item[{int}]{tube\+\_\+monitor\mbox{[}2\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Creates the threads and calls the function \mbox{\hyperlink{pow_8h_af8b97f752f3c17e5e5b8eb4d036b0089}{minar(void $\ast$d2)}} 
+
+s 
+\begin{DoxyParams}{Parameters}
+{\em target} & is the number we are looking for, nhilos is the number of threads, rondas is the the number of rounds, tube\+\_\+miner\mbox{[}2\mbox{]} and tube\+\_\+miner\mbox{[}2\mbox{]} are the pipes to communicate between processes.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Returns 0 if the function was executed correctly and 1 if there was any error. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{pow_8h_a762ac5edc02ddfd8bbe6b2fa2de761a4}\label{pow_8h_a762ac5edc02ddfd8bbe6b2fa2de761a4}} 
+\index{pow.h@{pow.h}!monitor@{monitor}}
+\index{monitor@{monitor}!pow.h@{pow.h}}
+\doxysubsubsection{\texorpdfstring{monitor()}{monitor()}}
+{\footnotesize\ttfamily int monitor (\begin{DoxyParamCaption}\item[{int}]{target,  }\item[{int}]{rondas,  }\item[{int}]{tube\+\_\+miner\mbox{[}2\mbox{]},  }\item[{int}]{tube\+\_\+monitor\mbox{[}2\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Checks the results of each round sent through the pipe by the function minero(..) and sends back to minero(..) if they are correct. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em target} & is the number we are looking for, rondas is the number of rounds, tube\+\_\+miner\mbox{[}2\mbox{]} and tube\+\_\+miner\mbox{[}2\mbox{]} are the pipes to communicate between processes.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Returns 0 if the function was executed correctly and 1 if there was any error. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{pow_8h_a55a671a56836a3e49010852dce91c511}\label{pow_8h_a55a671a56836a3e49010852dce91c511}} 
+\index{pow.h@{pow.h}!pow\_hash@{pow\_hash}}
+\index{pow\_hash@{pow\_hash}!pow.h@{pow.h}}
+\doxysubsubsection{\texorpdfstring{pow\_hash()}{pow\_hash()}}
+{\footnotesize\ttfamily long int pow\+\_\+hash (\begin{DoxyParamCaption}\item[{long int}]{x }\end{DoxyParamCaption})}
+
+
+
+Computes the following hash function\+: f(x) = (X x + Y) \% P. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em x} & Argument of the hash function, x. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Result of the hash function, f(x). 
+\end{DoxyReturn}
+\mbox{\Hypertarget{pow_8h_a7c6bbf609eb546c4c253b7e984049923}\label{pow_8h_a7c6bbf609eb546c4c253b7e984049923}} 
+\index{pow.h@{pow.h}!printWaitStatus@{printWaitStatus}}
+\index{printWaitStatus@{printWaitStatus}!pow.h@{pow.h}}
+\doxysubsubsection{\texorpdfstring{printWaitStatus()}{printWaitStatus()}}
+{\footnotesize\ttfamily void print\+Wait\+Status (\begin{DoxyParamCaption}\item[{int}]{status,  }\item[{char $\ast$}]{type }\end{DoxyParamCaption})}
+
+
+
+Prints the status of the function in the terminal and checks if the status was correct, if not looks for the signal that killed the process and it prints it in the terminal. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em x} & Argument of the hash function, x.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Result of the hash function, f(x). 
+\end{DoxyReturn}
