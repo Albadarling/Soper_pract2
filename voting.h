@@ -8,11 +8,22 @@
  * @copyright Copyright (c) 2022
  *
  */
+ 
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <string.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <signal.h>
+#include <fcntl.h>
 
 #ifndef _VOTING_H
 #define _VOTING_H
 
-int votante();
+int votante(sem_t *sem1, sem_t *sem2, int n_procs, FILE* elecciones);
 void int_handler(int sig);
 void padre_int_handler(int sig);
 
