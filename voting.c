@@ -23,7 +23,8 @@ int* read_pids(int n_procs){
     }
 
     fclose(fp);
-    if(line) free(line);
+    if(line)
+        free(line);
 
     return buffer;
 }
@@ -44,7 +45,8 @@ void padre_int_handler(int sig) {
     }
 
     fclose(fp);
-    if(line) free(line);
+    if(line)
+        free(line);
 
     exit_signaled = 1;
     return;
@@ -66,28 +68,29 @@ int main(int argc, char *argv[]){
     n_procs = atoi(argv[1]);
     n_secs = atoi(argv[2]);
 
-    buffer = (int*)malloc(sizeof(int) * n_procs);
-
-    
-    /* --------------------------- Initialize system -------------------------- */
-    
     //Alarma
     //--------
 
+    /* --------------------------- Initialize system -------------------------- */
+
+    buffer = (int*)malloc(sizeof(int) * n_procs);
+    
     // Create system file
-    pids = fopen(CHILDS, "w");
+    pids = fopen(CHILDS, "w+");
     if (!pids){
         perror("fopen");
         exit (EXIT_FAILURE);
     }
 
     // Create elections file
-    elecciones = fopen("elecciones", "w");
+    elecciones = fopen("elecciones", "w+");
     if (!elecciones){
         perror("fopen");
         exit (EXIT_FAILURE);
     }
-
+    fprintf(elecciones, "[ "); // clear voting file
+    fclose(elecciones);
+    elecciones = fopen("elecciones", "a+");
 
     // Preparar handler interrupt
     sigemptyset(&(act.sa_mask));    
@@ -98,10 +101,9 @@ int main(int argc, char *argv[]){
         perror("sigaction");
         exit(EXIT_FAILURE);
     }
-
-    // Initialize semaphors
     sem_unlink("/sem1");
     sem_unlink("/sem2");
+    // Initialize semaphors
     if((sem1 = sem_open("/sem1", O_CREAT | O_EXCL , S_IRUSR | S_IWUSR, 0)) == SEM_FAILED){
         perror("sem_open");
         exit(EXIT_FAILURE);
@@ -110,6 +112,7 @@ int main(int argc, char *argv[]){
         perror("sem_open");
         exit(EXIT_FAILURE);
     }
+
 
     // Crear procesos
     for (i = 0; i < n_procs; i++){
@@ -120,17 +123,13 @@ int main(int argc, char *argv[]){
         }
 
         if(childpid == 0){
-            // hijo ----
             votante(sem1, sem2, n_procs, elecciones);
         }else{
-            // padre ---
             fprintf(pids, "%d\n", childpid);
             buffer[i] = childpid;
         }
     }
-
     fflush(pids); // output pids to system file
-    fflush(elecciones);
 
     /* ---------------------------- Start childs --------------------------- */
 
@@ -168,6 +167,12 @@ int main(int argc, char *argv[]){
     // Terminar
     free(buffer);
     fclose(elecciones);
+    fclose(pids);
+    sem_close(sem1);
+    sem_close(sem2);
+    sem_unlink("/sem1");
+    sem_unlink("/sem2");
+
     if(exit_signaled == 1){
         printf("Finishing by signal\n");
     }
@@ -176,19 +181,18 @@ int main(int argc, char *argv[]){
 }
 
 
+// codigo que van a ejecutar los hijos //
 
 
-
-int listo = 0, candidate = 1, votar = 0;
+int listo, candidate, votar, nuevo, interrupt = 0;
 
 void int_handler(int sig) {
-    // Liberar espacio
-    printf("(interrupt) liberandooooo....\n");
+    interrupt = 1;
     exit(EXIT_SUCCESS);
 }
 
 void usr1_handler(int sig) {
-    if(listo){
+    if(listo){ // Ya hay candidato
         votar = 1;
     }
     listo = 1;
@@ -197,13 +201,35 @@ void usr1_handler(int sig) {
 
 void usr2_handler(int sig) {
     candidate = 0;
+
+    if(votar == 1){ // Ya han votado
+        nuevo = 1;
+    }
+}
+
+int getResults(char* s, int size){
+    int i, r = 0;
+
+    if(s == NULL) return 0;
+
+    for(i = 2; i <= size-2; i += 2){
+        if(s[i] == 'Y'){
+            r++;
+        }else{
+            r--;
+        }
+    }
+
+    if(r > 0){
+        return 1;
+    }
+
+    return 0;
 }
 
 char generarVoto(){
     srand(time(NULL) + getpid());
     int rand_num = rand() % 2;
-
-    printf("random: %i\n", rand_num);
 
     if(rand_num == 0){
         return 'N';
@@ -215,19 +241,14 @@ char generarVoto(){
 // Codigo que van a ejecutar los hijos
 int votante(sem_t *sem1, sem_t *sem2, int n_procs, FILE* elecciones){
     struct sigaction act_int, act_usr1, act_usr2;
-    sigset_t setUsr1, oset;
+    sigset_t set, oset;
     int* buffer;
     int i, ret;
-    char * line = NULL;
-    size_t len = 0;
-    ssize_t read;
 
     sigemptyset(&(act_int.sa_mask));
     act_int.sa_flags = 0;
 
-    printf("Una hijita\n");
-
-    /* --------------------------- Wait till ready -------------------------- */
+    listo = 0; candidate = 1; votar = 0; nuevo = 0; // variables globales
 
     // Set signal interrupt handler
     act_int.sa_handler = int_handler;
@@ -250,15 +271,18 @@ int votante(sem_t *sem1, sem_t *sem2, int n_procs, FILE* elecciones){
         exit(EXIT_FAILURE);
     }
 
+    /* --------------------------- Wait till ready -------------------------- */
+
+    printf("Una hijita\n");
     // Block everything but ready signal
-    sigemptyset(&setUsr1);
-    sigaddset(&setUsr1, SIGUSR1);
-    if(sigprocmask(SIG_BLOCK, &setUsr1, &oset) < 0){
+    sigemptyset(&set);
+    sigaddset(&set, SIGUSR1);
+    if(sigprocmask(SIG_BLOCK, &set, &oset) < 0){
         perror("sigprocmask");
         exit(EXIT_FAILURE);
     }
 
-    sem_post(sem1); // permitirle continuar al padre, el hijo esta listo a recibir el ready
+    sem_post(sem1);
 
     // Wait for user signal from system (ready)
     while(!listo){
@@ -266,7 +290,7 @@ int votante(sem_t *sem1, sem_t *sem2, int n_procs, FILE* elecciones){
     }
 
     // Return to normal
-    if(sigprocmask(SIG_UNBLOCK, &setUsr1, &oset) < 0){
+    if(sigprocmask(SIG_UNBLOCK, &set, &oset) < 0){
         perror("sigprocmask");
         exit(EXIT_FAILURE);
     }
@@ -301,12 +325,11 @@ int votante(sem_t *sem1, sem_t *sem2, int n_procs, FILE* elecciones){
         }
     }
 
-    //printf("Soy candidato? %d\n", candidate);
-
-    /* ----------------------------- Votar ---------------------------- */
+    /* ---------------------------------- Votar ---------------------------------- */
 
     if(candidate){
-        // Esperar a q los hermanos votantes estan readys (semaforo 2)
+
+        // Esperar a los votantes
         for (i = 0; i < n_procs-1; i++){
             ret = 4;
             while(ret == 4){
@@ -318,7 +341,7 @@ int votante(sem_t *sem1, sem_t *sem2, int n_procs, FILE* elecciones){
             }
         }
 
-        // Enviar sigusr1 a los votantes para que voten
+        // Enviar SIGUSR1 a los votantes
         for(i = 0; i < n_procs; i++){
             if(buffer[i] != getpid()){
                 if(kill(buffer[i], SIGUSR1) == -1){ 
@@ -328,27 +351,28 @@ int votante(sem_t *sem1, sem_t *sem2, int n_procs, FILE* elecciones){
             }
         }
 
-        // El candidato tambien vota
-        fprintf(elecciones, "%c ", generarVoto());
-        fflush(elecciones);
+        votante_votar(elecciones); // El candidato tambien vota
+        candidato_comprobarVotacion(elecciones, n_procs);
 
-        // Comprobar votacion
-        /*
-        int finished = 1;
+        // Nueva ronda
+        if(!interrupt){
+            usleep(250000);
 
-        while(!finished){
-            //usleep(1000);
+            // Enviar SIGUSR2 a los votantes
+            for(i = 0; i < n_procs; i++){
+                if(buffer[i] != getpid()){
+                    if(kill(buffer[i], SIGUSR2) == -1){ 
+                        perror("kill");
+                        exit(EXIT_FAILURE);
+                    }
+                }
+            }
 
-            fseek(elecciones, 0, SEEK_SET);
-            read = getline(&line, &len, elecciones);
-            printf("length: %ld\n", len);
-
-            usleep(500000);
-
-        }*/
+            free(buffer);
+            votante(sem1, sem2, n_procs, elecciones);
+        }
     
     }else{
-
         // Crear handler de SIGUSR1
         act_usr1.sa_handler = usr1_handler;
         if (sigaction(SIGUSR1, &act_usr1, NULL) < 0) {
@@ -357,14 +381,14 @@ int votante(sem_t *sem1, sem_t *sem2, int n_procs, FILE* elecciones){
         }
 
         // Block everything but voting signal
-        sigemptyset(&setUsr1);
-        sigaddset(&setUsr1, SIGUSR1);
-        if(sigprocmask(SIG_BLOCK, &setUsr1, NULL) < 0){
+        sigemptyset(&set);
+        sigaddset(&set, SIGUSR1);
+        if(sigprocmask(SIG_BLOCK, &set, NULL) < 0){
             perror("sigprocmask");
             exit(EXIT_FAILURE);
         }
     
-        sem_post(sem2);
+        sem_post(sem2); // Listo para votar
 
         // Wait for voting signal from candidate (sigusr1)
         while(!votar){
@@ -372,28 +396,89 @@ int votante(sem_t *sem1, sem_t *sem2, int n_procs, FILE* elecciones){
         }
 
         // Return to normal
-        if(sigprocmask(SIG_UNBLOCK, &setUsr1, &oset) < 0){
+        if(sigprocmask(SIG_UNBLOCK, &set, &oset) < 0){
             perror("sigprocmask");
             exit(EXIT_FAILURE);
         }
 
-        // Votar
-        if(fprintf(elecciones, "%c ", generarVoto()) < 0){
-            perror("fprintf");
-            exit(EXIT_FAILURE);
-        }
-        printf("[VOTANTE] acabo de votar a Trump 👽\n");
-        fflush(elecciones);
-
+        votante_votar(elecciones);
     }
 
-    //espera no activa hasta la siguiente ronda
+    /* ---------------------------------- Nueva ronda ---------------------------------- */
 
-    sleep(99);
+    // Block everything but voting signal
+    sigemptyset(&set);
+    sigaddset(&set, SIGUSR2);
+    sigaddset(&set, SIGINT);
+    if(sigprocmask(SIG_BLOCK, &set, NULL) < 0){
+        perror("sigprocmask");
+        exit(EXIT_FAILURE);
+    }
 
-    exit(EXIT_SUCCESS);
+    sem_post(sem2); // Listo para votar
+
+    // Wait for voting signal from candidate (sigusr1)
+    while(interrupt == 0 && nuevo == 0){
+        sigsuspend(&act_usr2.sa_mask);
+    }
+
+    // Return to normal
+    if(sigprocmask(SIG_UNBLOCK, &set, &oset) < 0){
+        perror("sigprocmask");
+        exit(EXIT_FAILURE);
+    }
+
+    if(interrupt){
+        if(buffer)
+            free(buffer);
+        exit(EXIT_SUCCESS);
+    }
+
+    if(nuevo){
+        votante(sem1, sem2, n_procs, elecciones);
+    }
 }
 
+void votante_votar(FILE* elecciones){
+    if(fprintf(elecciones, "%c ", generarVoto()) < 0){
+        perror("fprintf");
+        exit(EXIT_FAILURE);
+    }
+    fflush(elecciones);
+}
+
+/* ----------------------------- Comprobar la votacion ---------------------------- */
+void candidato_comprobarVotacion(FILE* elecciones, int n_procs){
+    char * line = NULL;
+    size_t len = 0;
+    ssize_t read;
+
+    int finished = 0, res = 0;
+    int finalSize = 2 + (2*n_procs);
+
+    while(!finished){
+        usleep(1000); // Espera no activa de 1ms
+
+        fseek(elecciones, 0, SEEK_SET);
+        read = getline(&line, &len, elecciones);
+        if(read == finalSize){
+            printf("Candidate %d => %s] => ", getpid(), line);
+            res = getResults(line, finalSize);
+            if(res == 1){
+                printf("Accepted\n");
+            }else{
+                printf("Rejected\n");
+            }
+            finished = 1;
+        }else if(read == -1){
+            perror("read");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    if(line)
+        free(line);
+}
 
 
 

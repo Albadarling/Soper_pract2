@@ -26,5 +26,6 @@
 int votante(sem_t *sem1, sem_t *sem2, int n_procs, FILE* elecciones);
 void int_handler(int sig);
 void padre_int_handler(int sig);
-
+void candidato_comprobarVotacion(FILE* elecciones, int n_procs);
+void votante_votar(FILE* elecciones);
 #endif
