@@ -23,9 +23,10 @@
 #ifndef _VOTING_H
 #define _VOTING_H
 
-int votante(sem_t *sem1, sem_t *sem2, int n_procs, FILE* elecciones);
+int votante(sem_t *sem1, sem_t *sem2, int n_procs, FILE* elecciones, int init, int ronda);
+int getResults(char* s, int size);
 void int_handler(int sig);
 void padre_int_handler(int sig);
-void candidato_comprobarVotacion(FILE* elecciones, int n_procs);
+void candidato_comprobarVotacion(FILE* elecciones, int n_procs, int ronda);
 void votante_votar(FILE* elecciones);
 #endif
